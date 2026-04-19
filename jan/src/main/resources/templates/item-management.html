@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS | Nexus Inventory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050810;
+            --card: rgba(30, 41, 59, 0.4);
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1e1b4b, #050810);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        /* --- Header Section --- */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .header-section h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin: 0;
+            background: linear-gradient(to right, #fff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .back-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.3s;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .back-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(-5px);
+        }
+
+        /* --- Global Card Style --- */
+        .card {
+            background: var(--card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            padding: 30px;
+            margin-bottom: 30px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        /* --- Add Item Form --- */
+        .add-item-form {
+            display: grid;
+            grid-template-columns: 1.5fr 1.5fr 1fr 0.8fr 0.8fr auto;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .input-field label {
+            display: block;
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            outline: none;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0 25px;
+            height: 45px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px var(--accent-glow);
+        }
+
+        /* --- Toolbar --- */
+        .inventory-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .search-input {
+            width: 280px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        /* --- Table --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 20px 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .price-col {
+            color: var(--success);
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+        }
+
+        /* --- Stock Tags --- */
+        .stock-tag {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .low-stock {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .desc-cell {
+            color: var(--text-muted);
+            max-width: 220px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* --- Action Buttons --- */
+        .action-edit { color: #fbbf24; text-decoration: none; font-weight: 700; margin-right: 15px; }
+        .action-del { color: var(--danger); text-decoration: none; font-weight: 700; }
+
+        .alert-msg {
+            max-width: 1200px;
+            margin: 0 auto 20px auto;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            text-align: center;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-section">
+        <h1>Inventory Control</h1>
+        <a th:href="@{/menu}" class="back-link">← System Menu</a>
+    </div>
+
+    <div th:if="${message}" class="alert-msg" th:text="${message}"></div>
+
+    <div class="card" sec:authorize="hasRole('ADMIN')">
+        <h3 style="margin-top:0; margin-bottom:20px; font-size: 18px; font-weight: 700;">Add System Asset</h3>
+        <form th:action="@{/items/add}" th:object="${newItem}" method="post" class="add-item-form">
+            <div class="input-field">
+                <label>Product Name</label>
+                <input type="text" th:field="*{name}" required placeholder="Unit Name">
+            </div>
+            <div class="input-field">
+                <label>Description</label>
+                <input type="text" th:field="*{description}" placeholder="Technical specs...">
+            </div>
+            <div class="input-field">
+                <label>Category</label>
+                <input type="text" th:field="*{category}" placeholder="Uncategorized">
+            </div>
+            <div class="input-field">
+                <label>Price (₱)</label>
+                <input type="number" step="0.01" th:field="*{price}" required>
+            </div>
+            <div class="input-field">
+                <label>Stock</label>
+                <input type="number" th:field="*{stock}" required>
+            </div>
+            <button type="submit" class="btn-primary">Register Asset</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <div class="inventory-toolbar">
+            <h3 style="margin:0; font-weight: 700;">Live Stock Registry</h3>
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <a th:href="@{/items/archive}" style="color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 700;">View Decommissioned</a>
+                
+                <form th:action="@{/items}" method="get" style="display: flex; gap: 10px;">
+                    <input type="text" name="search" class="search-input" placeholder="Search by name..." th:value="${param.search}">
+                    <button type="submit" class="btn-primary" style="height: 42px;">Search</button>
+                </form>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Serial ID</th>
+                    <th>Asset Name</th>
+                    <th>Specifications</th> 
+                    <th>Category</th>
+                    <th>Unit Price</th>
+                    <th>Availability</th>
+                    <th sec:authorize="hasRole('ADMIN')">Maintenance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${items}">
+                    <td th:text="${'#NX-' + item.id}" style="color: var(--text-muted); font-family: monospace;"></td>
+                    <td th:text="${item.name}" style="font-weight: 700;"></td>
+                    <td class="desc-cell" th:text="${item.description}" th:title="${item.description}"></td>
+                    <td th:text="${item.category}" style="color: var(--text-muted); font-size: 13px;"></td>
+                    <td class="price-col" th:text="${'₱' + #numbers.formatDecimal(item.price, 1, 2)}"></td>
+                    <td>
+                        <span th:class="${item.stock < 10} ? 'stock-tag low-stock' : 'stock-tag'" 
+                              th:text="${item.stock + ' Units'}"></span>
+                    </td>
+                    <td sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/items/edit/{id}(id=${item.id})}" class="action-edit">Edit</a>
+                        <a th:href="@{/items/delete/{id}(id=${item.id})}" class="action-del" onclick="return confirm('Decommission this asset?')">Cancel</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS | Nexus POS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050810;
+            --card: rgba(30, 41, 59, 0.4);
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1e1b4b, #050810);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .main-layout { 
+            display: grid; 
+            grid-template-columns: 1.3fr 1fr; 
+            gap: 20px; 
+            max-width: 1500px; 
+            margin: 0 auto; 
+        }
+
+        /* --- Header --- */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1500px;
+            margin: 0 auto 20px auto;
+        }
+
+        .header-section h1 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .back-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            transition: 0.3s;
+        }
+
+        .back-link:hover { color: white; background: rgba(255, 255, 255, 0.08); }
+
+        /* --- Cards --- */
+        .card {
+            background: var(--card);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        h3 { font-size: 16px; font-weight: 700; margin-top: 0; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- Product Selector --- */
+        .product-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+            gap: 12px; 
+            max-height: 500px; 
+            overflow-y: auto; 
+            padding-right: 10px;
+        }
+
+        .product-item { 
+            background: rgba(15, 23, 42, 0.5); 
+            border: 1px solid var(--border); 
+            padding: 15px; 
+            border-radius: 18px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .product-item:hover { 
+            border-color: var(--accent); 
+            transform: translateY(-4px);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .product-item h4 { margin: 10px 0 4px 0; font-size: 14px; color: #fff; }
+        .product-item p { color: var(--success); font-weight: 700; margin: 0; font-size: 14px; }
+        .stock-tag { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+
+        /* --- Checkout Table --- */
+        .cart-table { width: 100%; border-collapse: collapse; }
+        .cart-table th { text-align: left; font-size: 10px; color: var(--text-muted); text-transform: uppercase; padding-bottom: 12px; letter-spacing: 1px; }
+        .cart-table td { padding: 14px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+        
+        input[type="text"], .qty-input { 
+            background: rgba(15, 23, 42, 0.8); 
+            color: white; 
+            border: 1px solid var(--border); 
+            padding: 12px; 
+            border-radius: 10px; 
+            outline: none;
+            font-family: inherit;
+        }
+
+        input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+
+        .btn-submit { 
+            background: var(--accent); 
+            color: white; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 14px; 
+            width: 100%; 
+            font-weight: 800; 
+            cursor: pointer; 
+            margin-top: 20px;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 20px var(--accent-glow); }
+
+        /* --- Status & History --- */
+        .status-badge { 
+            background: rgba(245, 158, 11, 0.1); 
+            color: #f59e0b; 
+            padding: 4px 10px; 
+            border-radius: 8px; 
+            font-size: 10px; 
+            font-weight: 700;
+            border: 1px solid rgba(245, 158, 11, 0.2); 
+        }
+
+        .history-row:hover { background: rgba(255,255,255,0.02); }
+
+        /* --- Modal --- */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left:0; top:0; 
+            width:100%; height:100%; 
+            background: rgba(0,0,0,0.85); 
+            backdrop-filter: blur(10px);
+        }
+        .modal-content { 
+            background: #0f172a; 
+            margin: 8% auto; 
+            padding: 35px; 
+            border-radius: 28px; 
+            width: 450px; 
+            border: 1px solid var(--accent); 
+            box-shadow: 0 0 50px var(--accent-glow);
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="header-section">
+        <h1>Nexus Terminal</h1>
+        <a th:href="@{/menu}" class="back-link">← Core System</a>
+    </div>
+
+    <div class="main-layout">
+        
+        <div class="selection-area">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Tactical Inventory</h3>
+                    <input type="text" id="itemSearch" onkeyup="filterProducts()" placeholder="Filter assets..." style="width: 200px; padding: 8px 12px; border-radius: 8px;">
+                </div>
+                
+                <div class="product-grid" id="productGrid">
+                    <div th:each="i : ${items}" class="product-item" 
+                         th:onclick="quickAdd([[${i.id}]], [[${i.name}]], [[${i.price}]], [[${i.stock}]])">
+                        <div style="font-size: 20px; margin-bottom: 5px; opacity: 0.8;">📦</div>
+                        <h4 th:text="${i.name}">Product Name</h4>
+                        <p th:text="${'₱' + #numbers.formatDecimal(i.price, 1, 2)}">₱0.00</p>
+                        <span class="stock-tag" th:text="${i.stock + ' IN STOCK'}">0 IN STOCK</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Order Log</h3>
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Recipient</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ord : ${orders}" class="history-row" style="cursor: pointer;"
+                            th:data-customer="${ord.customerName}"
+                            th:data-total="${ord.totalAmount}"
+                            th:data-items="${ord.orderItems != null ? #strings.listJoin(ord.orderItems.![item.name + ' (x' + quantity + ')'], ' | ') : ''}"
+                            onclick="viewDetails(this)">
+                            <td th:text="${ord.customerName}" style="font-weight: 600;"></td>
+                            <td th:text="${'₱' + #numbers.formatDecimal(ord.totalAmount, 1, 2)}" style="font-weight: 700; color: var(--success);"></td>
+                            <td><span class="status-badge" th:text="${ord.status}"></span></td>
+                            <td>
+                                <div sec:authorize="hasRole('ADMIN')">
+                                    <a th:href="@{/orders/delete/{id}(id=${ord.id})}" style="color: var(--danger); text-decoration: none; font-size: 11px; font-weight: 700;" onclick="event.stopPropagation(); return confirm('Purge this transaction?');">VOID</a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="checkout-area">
+            <div class="card" style="position: sticky; top: 20px;">
+                <h3>Active Checkout</h3>
+                <form th:action="@{/orders/add}" method="post" id="orderForm">
+                    <div style="margin-bottom: 25px;">
+                        <label style="font-size: 10px; color: var(--accent); font-weight: 800; letter-spacing: 1px;">CUSTOMER IDENTIFIER</label>
+                        <input type="text" name="customerName" placeholder="Enter recipient identity..." required style="margin-top: 8px; width: 100%;">
+                    </div>
+                    
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartBody">
+                            </tbody>
+                    </table>
+
+                    <div style="margin-top: 35px; border-top: 1px dashed var(--border); padding-top: 25px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-muted); font-weight: 600;">System Grand Total</span>
+                            <h2 style="color: var(--success); margin:0; font-weight: 800;">₱<span id="grandTotalDisplay">0.00</span></h2>
+                        </div>
+                        <button type="submit" class="btn-submit">Finalize Transaction</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="orderDetailModal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0; color: var(--accent); font-weight: 800;">Transaction Receipt</h2>
+            <div id="modalBody" style="line-height: 2;">
+                <p style="color: var(--text-muted);">Recipient: <span id="viewCustomer" style="color: #fff; font-weight: 700;"></span></p>
+                <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin: 15px 0;">
+                    <span id="viewItem" style="color: var(--text-muted); font-size: 13px; font-family: monospace;"></span>
+                </div>
+                <p style="text-align: right; font-size: 18px;">Total: <span style="color: var(--success); font-weight: 800;">₱<span id="viewTotal"></span></span></p>
+            </div>
+            <button class="btn-submit" onclick="closeModal()" style="background: rgba(255,255,255,0.05); color: var(--text-muted); margin-top: 10px; border: 1px solid var(--border);">Close Terminal</button>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        function quickAdd(id, name, price, stock) {
+            if (stock <= 0) { alert("Asset Out of Stock"); return; }
+            
+            let tbody = document.getElementById('cartBody');
+            let existingRow = document.querySelector(`tr[data-id="${id}"]`);
+
+            if (existingRow) {
+                let qtyInput = existingRow.querySelector('.qty-input');
+                let newQty = parseInt(qtyInput.value) + 1;
+                if (newQty > stock) { alert("Maximum Stock Allocation Reached"); return; }
+                qtyInput.value = newQty;
+                updateRow(qtyInput, price);
+            } else {
+                let row = document.createElement('tr');
+                row.setAttribute('data-id', id);
+                row.innerHTML = `
+                    <td>
+                        <span style="font-weight:700;">${name}</span>
+                        <input type="hidden" name="itemIds" value="${id}">
+                    </td>
+                    <td>
+                        <input type="number" name="quantities" value="1" min="1" max="${stock}" 
+                               class="qty-input" oninput="updateRow(this, ${price})" 
+                               style="width:50px; padding:6px; background:rgba(0,0,0,0.3); text-align: center;">
+                    </td>
+                    <td class="item-total" style="font-weight:700; color:var(--success);">${price.toFixed(2)}</td>
+                    <td style="text-align: right;">
+                        <button type="button" onclick="removeRow(this)" style="background:none; border:none; color:var(--danger); font-weight:800; cursor:pointer; font-size:18px;">&times;</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+            updateGrandTotal();
+        }
+
+        function removeRow(btn) {
+            btn.closest('tr').remove();
+            updateGrandTotal();
+        }
+
+        function updateRow(input, price) {
+            let row = input.closest('tr');
+            let totalCell = row.querySelector('.item-total');
+            let qty = parseInt(input.value) || 0;
+            totalCell.innerText = (qty * price).toFixed(2);
+            updateGrandTotal();
+        }
+
+        function updateGrandTotal() {
+            let totals = document.querySelectorAll('.item-total');
+            let sum = 0;
+            totals.forEach(t => sum += parseFloat(t.innerText));
+            document.getElementById('grandTotalDisplay').innerText = sum.toFixed(2);
+        }
+
+        function filterProducts() {
+            let val = document.getElementById('itemSearch').value.toLowerCase();
+            document.querySelectorAll('.product-item').forEach(item => {
+                item.style.display = item.innerText.toLowerCase().includes(val) ? "block" : "none";
+            });
+        }
+
+        function viewDetails(el) {
+            document.getElementById('viewCustomer').innerText = el.getAttribute('data-customer');
+            document.getElementById('viewTotal').innerText = parseFloat(el.getAttribute('data-total')).toFixed(2);
+            let items = el.getAttribute('data-items').split(' | ').join('<br>');
+            document.getElementById('viewItem').innerHTML = items;
+            document.getElementById('orderDetailModal').style.display = "block";
+        }
+
+        function closeModal() { document.getElementById('orderDetailModal').style.display = "none"; }
+        window.onclick = function(event) { if (event.target == document.getElementById('orderDetailModal')) closeModal(); }
+    </script>
+</body>
+</html>

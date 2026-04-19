@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS | Nexus Command</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { 
+            --bg: #050810; 
+            --sidebar: rgba(17, 24, 39, 0.8); 
+            --card: rgba(30, 41, 59, 0.5);
+            --accent: #6366f1; 
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --success: #10b981; 
+            --danger: #ef4444; 
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body { 
+            background: radial-gradient(circle at top right, #1e1b4b, #050810);
+            color: var(--text-main); 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar { 
+            width: 280px; 
+            background: var(--sidebar); 
+            backdrop-filter: blur(20px);
+            height: 100vh; 
+            padding: 32px 24px; 
+            box-sizing: border-box; 
+            border-right: 1px solid var(--border); 
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar h2 { 
+            background: linear-gradient(to right, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 22px; 
+            font-weight: 800;
+            margin-bottom: 40px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+        }
+
+        .back-to-menu {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+            padding: 14px;
+            border-radius: 16px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 32px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .back-to-menu:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+            transform: translateX(-4px);
+        }
+
+        .nav-group-label {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 24px 0 12px 12px;
+            opacity: 0.8;
+        }
+
+        .nav-link { 
+            display: flex; 
+            align-items: center; 
+            padding: 12px 16px; 
+            color: var(--text-muted); 
+            text-decoration: none; 
+            border-radius: 12px; 
+            margin-bottom: 6px; 
+            transition: all 0.2s; 
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-link.active { 
+            background: var(--accent); 
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        /* --- Main Content Area --- */
+        .main-content { 
+            margin-left: 280px; 
+            padding: 50px; 
+            width: calc(100% - 280px); 
+            box-sizing: border-box; 
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 24px; 
+            margin-bottom: 40px; 
+        }
+
+        .stat-card { 
+            background: var(--card); 
+            backdrop-filter: blur(10px);
+            padding: 24px; 
+            border-radius: 24px; 
+            border: 1px solid var(--border);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .stat-card h2 { margin: 8px 0 0 0; font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+        .stat-card small { color: var(--text-muted); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 1.8fr 1.2fr;
+            gap: 30px;
+        }
+
+        .content-card { 
+            background: var(--card); 
+            backdrop-filter: blur(10px);
+            border-radius: 28px; 
+            padding: 30px; 
+            border: 1px solid var(--border); 
+        }
+
+        .content-card h3 { margin-top: 0; font-weight: 700; font-size: 18px; margin-bottom: 24px; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: var(--accent); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding-bottom: 16px; }
+        td { padding: 16px 0; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-main); }
+        .customer-name { font-weight: 600; }
+
+        .logout-btn { 
+            margin-top: auto;
+            background: rgba(239, 68, 68, 0.1); 
+            border: 1px solid rgba(239, 68, 68, 0.2); 
+            color: var(--danger); 
+            padding: 14px; 
+            border-radius: 14px; 
+            cursor: pointer; 
+            font-weight: 700;
+            transition: 0.3s;
+            font-size: 13px;
+        }
+        .logout-btn:hover { background: var(--danger); color: white; box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <h2>Nexus Command</h2>
+        
+        <a th:href="@{/menu}" class="back-to-menu">
+            <span>🏠</span> Back to Terminal
+        </a>
+
+        <div class="nav-group-label">Intelligence</div>
+        <a th:href="@{/dashboard}" class="nav-link active">📊 Analytics Core</a>
+
+        <div class="nav-group-label">Operations</div>
+        <a th:href="@{/orders}" class="nav-link">🛒 Sales Orders</a>
+        <a th:href="@{/items}" class="nav-link">📦 Asset Stock</a>
+        <a th:href="@{/labor}" class="nav-link">👷 Personnel</a>
+        
+        <div sec:authorize="hasRole('ADMIN')">
+            <div class="nav-group-label">Security</div>
+            <a th:href="@{/users}" class="nav-link">👥 Access Control</a>
+        </div>
+
+        <form th:action="@{/logout}" method="post" style="margin-top: auto;">
+            <button type="submit" class="logout-btn" style="width: 100%;">Terminate Session</button>
+        </form>
+    </nav>
+
+    <main class="main-content">
+        <header style="margin-bottom: 48px;">
+            <h1 style="margin:0; font-size: 36px; font-weight: 800; letter-spacing: -1.5px;">System Overview</h1>
+            <p style="color: var(--text-muted); margin-top: 4px;">Synchronized data from all active modules.</p>
+        </header>
+
+        <div class="stats-grid">
+    
+    <div class="stat-card" sec:authorize="hasAnyRole('ADMIN', 'CO-ADMIN')">
+        <div class="stat-label">System Revenue</div>
+        <div class="stat-value" th:text="'₱' + ${totalSales}">0.00</div>
+        <div class="stat-meta">Nexus Financial Core</div>
+    </div>
+
+    <div class="stat-card" sec:authorize="hasAnyRole('ADMIN', 'CO-ADMIN')">
+        <div class="stat-label">Active Personnel</div>
+        <div class="stat-value" th:text="${activeLaborCount}">0</div>
+        <div class="stat-meta" th:text="${'Total Wage: ₱' + totalWages}"></div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Daily Transactions</div>
+        <div class="stat-value" th:text="${orderCount}">0</div>
+        <div class="stat-meta">Active Cycle</div>
+    </div>
+</div>
+
+<div class="card" sec:authorize="hasRole('ADMIN')">
+    <h3><span>🛡️</span> System Admin Console</h3>
+    <p>Only the Primary Administrator can view system logs and identity registry shortcuts here.</p>
+    <a th:href="@{/users}" class="btn-save">Manage Identities</a>
+</div>
+
+
+        <div class="dashboard-layout">
+            <div class="content-card">
+                <h3>Revenue Performance (7D)</h3>
+                <div style="height: 300px;">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <h3>Recent Activity</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Origin</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ord, iter : ${recentOrders}" th:if="${iter.index < 6}">
+                            <td class="customer-name" th:text="${ord.customerName}"></td>
+                            <td th:text="'₱' + ${#numbers.formatDecimal(ord.totalAmount, 1, 2)}" style="color: var(--success); font-weight: 700;"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+        gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Revenue',
+                    data: [1200, 1900, 1500, 2500, 2200, 3100, 2800],
+                    borderColor: '#6366f1',
+                    borderWidth: 4,
+                    pointBackgroundColor: '#6366f1',
+                    pointBorderColor: 'rgba(255,255,255,0.5)',
+                    pointHoverRadius: 7,
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: gradient
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' }, 
+                        ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', weight: '600' } } 
+                    },
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', weight: '600' } } 
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

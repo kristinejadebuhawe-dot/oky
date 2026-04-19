@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS | Nexus Asset Edit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050810;
+            --card: rgba(30, 41, 59, 0.6);
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top right, #1e1b4b, #050810);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+        }
+
+        .edit-card {
+            background: var(--card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            border-radius: 32px;
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .header-box {
+            margin-bottom: 32px;
+        }
+
+        .header-box h2 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-box p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--accent);
+            background: rgba(15, 23, 42, 0.8);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .grid-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn-save {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-save:hover {
+            background: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px rgba(99, 102, 241, 0.5);
+        }
+
+        .cancel-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .cancel-link:hover {
+            color: white;
+        }
+
+        /* Subtle glow effect on the save button pulse */
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="edit-card">
+        <div class="header-box">
+            <h2>Asset Modification</h2>
+            <p>Modify inventory parameters for SKU synchronization.</p>
+        </div>
+
+        <form th:action="@{/items/update}" th:object="${item}" method="post">
+            <input type="hidden" th:field="*{id}">
+
+            <div class="form-group">
+                <label>Product Name</label>
+                <input type="text" th:field="*{name}" required placeholder="e.g. Industrial Gasket">
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea th:field="*{description}" placeholder="Specify technical details or notes..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Category Tag</label>
+                <input type="text" th:field="*{category}" placeholder="e.g. Hardware, Electronics">
+            </div>
+
+            <div class="grid-row">
+                <div class="form-group">
+                    <label>Unit Price (₱)</label>
+                    <input type="number" step="0.01" th:field="*{price}" required>
+                </div>
+                <div class="form-group">
+                    <label>In-Stock Level</label>
+                    <input type="number" th:field="*{stock}" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-save">Confirm Synchronization</button>
+            
+            <a th:href="@{/items}" class="cancel-link">Discard Changes and Return</a>
+        </form>
+    </div>
+
+</body>
+</html>

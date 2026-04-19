@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS | Nexus Archive</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050810;
+            --card: rgba(30, 41, 59, 0.5);
+            --accent: #10b981; /* Green for restoration/success */
+            --accent-glow: rgba(16, 185, 129, 0.3);
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1e1b4b, #050810);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 50px;
+            min-height: 100vh;
+        }
+
+        /* --- Header --- */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .header-section h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .back-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(-5px);
+        }
+
+        /* --- Archive Card --- */
+        .archive-card {
+            background: var(--card);
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 40px;
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .archive-info {
+            margin-bottom: 30px;
+        }
+
+        .archive-info h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .archive-info p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        /* --- Table Styling --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            color: #6366f1; /* Using your primary accent for headers */
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding-bottom: 20px;
+        }
+
+        td {
+            padding: 18px 0;
+            border-top: 1px solid var(--border);
+            font-size: 15px;
+        }
+
+        .item-id {
+            font-family: monospace;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .item-name {
+            font-weight: 700;
+            color: white;
+        }
+
+        .price-tag {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* --- Restore Button --- */
+        .btn-restore {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            transition: all 0.3s;
+            display: inline-block;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .btn-restore:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px var(--accent-glow);
+            filter: brightness(1.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-section">
+        <div>
+            <h1>Asset Archive</h1>
+            <p style="color: var(--text-muted); margin: 5px 0 0 0;">Reviewing decommissioned system items.</p>
+        </div>
+        <a th:href="@{/items}" class="back-link">← Return to Inventory</a>
+    </div>
+
+    <div class="archive-card">
+        <div class="archive-info">
+            <h3>Inactive Inventory Logs</h3>
+            <p>These assets have been flagged as inactive and are hidden from real-time sales modules.</p>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Serial ID</th>
+                    <th>Asset Name</th>
+                    <th>Category</th>
+                    <th>Last Price</th>
+                    <th>Current Status</th>
+                    <th sec:authorize="hasRole('ADMIN')">System Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${items}">
+                    <td class="item-id" th:text="${'#NX-' + item.id}"></td>
+                    <td class="item-name" th:text="${item.name}"></td>
+                    <td th:text="${item.category}" style="color: var(--text-muted);"></td>
+                    <td class="price-tag" th:text="${'₱' + #numbers.formatDecimal(item.price, 1, 2)}"></td>
+                    <td>
+                        <span class="status-badge">
+                            <span style="font-size: 8px;">●</span> DECOMMISSIONED
+                        </span>
+                    </td>
+                    <td sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/items/restore/{id}(id=${item.id})}" class="btn-restore">Reactivate Asset</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(items)}">
+                    <td colspan="6" class="empty-state">
+                        <span style="font-size: 24px; display: block; margin-bottom: 10px;">📂</span>
+                        No archived assets found in the local repository.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

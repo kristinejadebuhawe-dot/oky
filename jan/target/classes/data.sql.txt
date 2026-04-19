@@ -1,0 +1,2 @@
+INSERT INTO users (username, password, email, role) 
+VALUES ('admin', '$2a$10$i8hQA33GB9sRPH5qcbvXVumApaslBeFLDgzVA6Q2BMW/PM8oQAyPK', 'admin@lms.com', 'ROLE_ADMIN');
